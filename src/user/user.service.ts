@@ -72,10 +72,6 @@ export class UserService {
 
   async findOne(id: string) {
     return this.users.find((user) => user.id === id);
-
-    // if (user) {
-    //   return new User({ ...user });
-    // }
   }
 
   async update(id: string, dto: UpdatePasswordDto) {
@@ -88,7 +84,6 @@ export class UserService {
     const user = this.users[userIndex];
 
     if (user.password !== dto.oldPassword) {
-      // Server should answer with status code 403 and corresponding message if oldPassword is wrong
       throw new ForbiddenException(USER_INVALID_OLD_PASSWORD_ERROR);
     }
 
