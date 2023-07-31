@@ -24,7 +24,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ID_ERROR,
 } from './user.constants';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { User } from './entities/user.entity';
 
@@ -48,10 +48,9 @@ export class UserController {
       throw new BadRequestException(USER_INVALID_DATA_ERROR);
     }
 
-    // const dataAsPlain = instanceToPlain(data);
+    const dataAsPlain = instanceToPlain(data) as CreateUserDto;
 
-    // const createdUser = await this.userService.create(dataAsPlain);
-    const createdUser = await this.userService.create(dto);
+    const createdUser = await this.userService.create(dataAsPlain);
 
     if (!createdUser) {
       throw new NotFoundException(USER_NOT_FOUND_ERROR);
@@ -107,9 +106,9 @@ export class UserController {
         throw new BadRequestException(USER_INVALID_DATA_ERROR);
       }
 
-      // const dataAsPlain = instanceToPlain(data);
+      const dataAsPlain = instanceToPlain(data) as UpdatePasswordDto;
 
-      const updatedUser = await this.userService.update(id, dto);
+      const updatedUser = await this.userService.update(id, dataAsPlain);
 
       if (!updatedUser) {
         throw new NotFoundException(USER_NOT_FOUND_ID_ERROR);

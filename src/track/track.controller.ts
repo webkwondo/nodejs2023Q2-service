@@ -8,7 +8,6 @@ import {
   Put,
   NotFoundException,
   BadRequestException,
-  HttpException,
   HttpCode,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
@@ -22,7 +21,7 @@ import {
   TRACK_NOT_FOUND_ERROR,
   TRACK_NOT_FOUND_ID_ERROR,
 } from './track.constants';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Track } from './entities/track.entity';
 
@@ -45,7 +44,9 @@ export class TrackController {
       throw new BadRequestException(TRACK_INVALID_DATA_ERROR);
     }
 
-    const createdTrack = await this.trackService.create(dto);
+    const dataAsPlain = instanceToPlain(data) as CreateTrackDto;
+
+    const createdTrack = await this.trackService.create(dataAsPlain);
 
     if (!createdTrack) {
       throw new NotFoundException(TRACK_NOT_FOUND_ERROR);
@@ -83,31 +84,33 @@ export class TrackController {
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateTrackDto) {
-    try {
-      if (!uuidValidate(id)) {
-        throw new BadRequestException(TRACK_INVALID_ID_ERROR);
-      }
-
-      const data = plainToInstance(UpdateTrackDto, dto);
-      const errors = await validate(data, {
-        whitelist: true,
-        skipMissingProperties: false,
-      });
-
-      if (errors.length > 0) {
-        throw new BadRequestException(TRACK_INVALID_DATA_ERROR);
-      }
-
-      const updatedTrack = await this.trackService.update(id, dto);
-
-      if (!updatedTrack) {
-        throw new NotFoundException(TRACK_NOT_FOUND_ID_ERROR);
-      }
-
-      return new Track({ ...updatedTrack });
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
+    // try {
+    if (!uuidValidate(id)) {
+      throw new BadRequestException(TRACK_INVALID_ID_ERROR);
     }
+
+    const data = plainToInstance(UpdateTrackDto, dto);
+    const errors = await validate(data, {
+      whitelist: true,
+      skipMissingProperties: false,
+    });
+
+    if (errors.length > 0) {
+      throw new BadRequestException(TRACK_INVALID_DATA_ERROR);
+    }
+
+    const dataAsPlain = instanceToPlain(data);
+
+    const updatedTrack = await this.trackService.update(id, dataAsPlain);
+
+    if (!updatedTrack) {
+      throw new NotFoundException(TRACK_NOT_FOUND_ID_ERROR);
+    }
+
+    return new Track({ ...updatedTrack });
+    // } catch (error) {
+    //   throw new HttpException(error.message, error.status);
+    // }
   }
 
   @Delete(':id')
